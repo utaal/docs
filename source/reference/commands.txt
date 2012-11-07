@@ -303,6 +303,9 @@ Diagnostic Commands
 .. include:: command/listCommands.txt
    :start-after: mongodb
 
+.. include:: command/statisticalCommands.txt
+   :start-after: mongodb
+
 Other Commands
 ~~~~~~~~~~~~~~
 

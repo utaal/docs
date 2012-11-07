@@ -1,0 +1,60 @@
+========
+validate
+========
+
+.. default-domain:: mongodb
+
+.. dbcommand:: storageDetails
+
+   The ``storageDetails`` command ....
+   The command can be slow, particularly on larger data sets:
+
+   .. code-block:: javascript
+
+      { storageDetails: "users",
+        analyze: "diskStorage" | "pagesInRAM" }
+
+   This command will - the contents of the collection named
+   ``users``. You may also specify one of the following
+   options:
+
+   - ``extent: 4`` only processes the 5th extent of the collection
+
+   - ``range: [start, end]`` requires an ``extent`` to be specified.
+     Only processes the range between ``start`` bytes and ``end``
+     bytes from the start of the extent.
+
+   - ``granularity: 1 << 20`` splits the extents in 20MB chunks and
+     reports statistics aggregated per-chunks.
+
+   - ``numberOfChunks: 100`` splits the extent(s) in 100 chunks and
+     reports statistics aggregated per-chunk.
+   
+   ``granularity`` and ``numberOfChunks`` are mutually exclusive.
+
+   - ``characteristicField: "dotted.path"`` specifies a field in the
+     documents of the collection to be inspected and averaged to give
+     an hint on what kind of documents belong to an extent or chunk.
+     Defaults to ``"_id"``. ObjectIDs, any number and Dates are
+     supported. If the field has the wrong type in some documents
+     it would be silently ignored.
+
+   - ``processDeletedRecords: false`` disables the analysis of deleted
+     records which can be slow as it requires an iteration on all
+     the deletedList bucket for each extent. Defaults to ``true``.
+
+   - ``showRecords: true`` outputs basic information for each document
+     and deletedRecord encountered. It should only be enabled for small
+     ranges on single extents. Produces large output which can exceed
+     the maximum bson object size.
+
+   The :program:`mongo` shell also provides wrappers:
+
+   .. code-block:: javascript
+
+      db.collection.diskStorageStats();
+
+   .. warning:: This command is resource intensive and may have an
+      impact on the performance of your MongoDB instance.
+
+   .. read-lock
