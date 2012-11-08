@@ -1,13 +1,12 @@
-========
-validate
-========
+==============
+storageDetails
+==============
 
 .. default-domain:: mongodb
 
 .. dbcommand:: storageDetails
 
-   The ``storageDetails`` command ....
-   The command can be slow, particularly on larger data sets:
+   The command can be slow, particularly on larger data sets.
 
    .. code-block:: javascript
 
@@ -50,20 +49,7 @@ validate
      ranges on single extents. Produces large output which can exceed
      the maximum bson object size.
 
-   The :program:`mongo` shell also provides wrappers:
-
-   .. code-block:: javascript
-
-      db.collection.diskStorageStats()aa;
-      db.collection.pagesInRAM();
-
-   ``diskStorageStats`` analyzes storage for the collection
-   (equivalent to invoking the command with ``{analyze: "diskStorage"}``).
-
-   ``pagesInRAM`` reports the percentage of pages in RAM for the collection
-   (equivalent to invoking the command with ``{analyze: "pagesInRAM"}``).
-
-   The typical output has the form:
+   The typical output, when ``analyze: 'diskStorage'``, has the form:
 
    .. code-block:: javascript
 
@@ -117,6 +103,30 @@ validate
                  ... (one element per deleted record)
              ]
    
+   The typical output, when ``analyze: 'pagesInRAM'``, has the form:
+
+
+
+   The :program:`mongo` shell also provides wrappers:
+
+   .. code-block:: javascript
+
+      db.collection.diskStorageStats();
+      db.collection.pagesInRAM();
+
+      db.collection.getDiskStorageStats();
+      db.collection.getPagesInRAM();
+
+   ``diskStorageStats`` analyzes storage for the collection
+   (equivalent to invoking the command with ``{analyze: "diskStorage"}``).
+
+   ``pagesInRAM`` reports the percentage of pages in RAM for the collection
+   (equivalent to invoking the command with ``{analyze: "pagesInRAM"}``).
+
+   ``db.collection.getDiskStorageStats`` and ``db.collection.getPagesInRAM``
+   take the same parameters as ``diskStorageStats`` and ``pagesInRAM``,
+   respectively, and provide a human-readable representation of the output.
+
 
    .. warning:: This command is resource intensive and may have an
       impact on the performance of your MongoDB instance. It also requires
