@@ -10,14 +10,18 @@ indexStats
 
    .. code-block:: javascript
 
-      { indexStats: "collection_name" }
+      { indexStats: "collection_name",
+        index: "index_name" }
 
+   This command provides detailed and aggregate information and statistics for the underlying
+   btree for the index ``index_name`` in the collection ``collection_name``.
+   Stats are aggregated for the entire tree, per-depth and, if requested through the ``expandNodes``
+   option, per-subtree.
 
-   The :program:`mongo` shell also provides wrappers:
-
-   .. code-block:: javascript
-
-      db.collection.indexStats();
+   You can specify ``expandNodes: [0, 3]`` to expand the root (node 0 at depth 0) and the 4th child
+   of root (node 3 at depth 1). The first element of the array should always be 0 otherwise no
+   node will be expanded (there's only root ad depth 0). This will provide basic information about
+   the expanded nodes and statistics for the subtrees rooted at the nodes themselves.
 
    The typical output has the form:
 
@@ -59,17 +63,17 @@ indexStats
                 the first refers to the root)
            ]
          }
-     
-     If 'expandNodes: [array]' was specified in the parameters, an additional field named
-     'expandedNodes' is included in the output. It contains two nested arrays, such that the
-     n-th element of the outer array contains stats for nodes at depth n (root is included) and
-     the i-th element (0-based) of the inner array at depth n contains stats for the subtree
-     rooted at the i-th child of the expanend node at depth (n - 1).
-     Each element of the inner array has the same structure as 'overall' in the description above:
-     it includes the aggregate stats for all the nodes in the subtree excluding the current
-     bucket.
-     It also contains an additional field 'nodeInfo' representing information for the current
-     node:
+
+   If 'expandNodes: [array]' was specified in the parameters, an additional field named
+   'expandedNodes' is included in the output. It contains two nested arrays, such that the
+   n-th element of the outer array contains stats for nodes at depth n (root is included) and
+   the i-th element (0-based) of the inner array at depth n contains stats for the subtree
+   rooted at the i-th child of the expanend node at depth (n - 1).
+   Each element of the inner array has the same structure as 'overall' in the description above:
+   it includes the aggregate stats for all the nodes in the subtree excluding the current
+   bucket.
+   It also contains an additional field 'nodeInfo' representing information for the current
+   node:
 
    .. code-block:: javascript
 
@@ -85,6 +89,19 @@ indexStats
            firstKey: <bson object containing the value for the first key>
            lastKey: <bson object containing the value for the last key>
          }
+
+   The :program:`mongo` shell also provides wrappers:
+
+   .. code-block:: javascript
+
+      db.collection.indexStats({index: "index_name"});
+      db.collection.getIndexStats({index: "index_name"});
+
+      ``db.collection.indexStats({index: "index_name"})`` is equivalent to running the command
+      with {indexStats: "collection", index: "index_name"}.
+
+      ``db.collection.getIndexStats`` takes the same parameters as ``indexStats`` and provides
+      a human-readable summary of the output in the shell.
 
    .. warning:: This command is resource intensive and may have an
       impact on the performance of your MongoDB instance. It also requires
