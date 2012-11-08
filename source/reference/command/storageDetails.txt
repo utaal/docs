@@ -11,25 +11,27 @@ validate
 
    .. code-block:: javascript
 
-      { storageDetails: "users",
+      { storageDetails: "collection_name",
         analyze: "diskStorage" | "pagesInRAM" }
 
-   This command will - the contents of the collection named
-   ``users``. You may also specify one of the following
-   options:
+   This command will aggregate statistics related to the storage layout
+   (when invoked with ``analyze: "diskStorage"``) or the percentage of pages
+   currently in RAM (when invoked with ``analyze: "pagesInRAM"``) for the
+   specified collection.
+   You may also specify one of the following options:
 
-   - ``extent: 4`` only processes the 5th extent of the collection
+   - ``extent: 4`` (0-based) only processes the 5th extent of the collection
 
-   - ``range: [start, end]`` requires an ``extent`` to be specified.
-     Only processes the range between ``start`` bytes and ``end``
-     bytes from the start of the extent.
+   - ``range: [start, end]`` only processes the range between ``start`` bytes
+     and ``end`` bytes from the start of the extent. Requires an ``extent`` to
+     be specified.
 
    - ``granularity: 1 << 20`` splits the extents in 20MB chunks and
-     reports statistics aggregated per-chunks.
+     reports statistics aggregated per-chunk.
 
    - ``numberOfChunks: 100`` splits the extent(s) in 100 chunks and
      reports statistics aggregated per-chunk.
-   
+
    ``granularity`` and ``numberOfChunks`` are mutually exclusive.
 
    - ``characteristicField: "dotted.path"`` specifies a field in the
@@ -52,9 +54,73 @@ validate
 
    .. code-block:: javascript
 
-      db.collection.diskStorageStats();
+      db.collection.diskStorageStats()aa;
+      db.collection.pagesInRAM();
+
+   ``diskStorageStats`` analyzes storage for the collection
+   (equivalent to invoking the command with ``{analyze: "diskStorage"}``).
+
+   ``pagesInRAM`` reports the percentage of pages in RAM for the collection
+   (equivalent to invoking the command with ``{analyze: "pagesInRAM"}``).
+
+   The typical output has the form:
+
+   .. code-block:: javascript
+
+           { extentHeaderBytes: <size>,
+             recordHeaderBytes: <size>,
+             range: [startOfs, endOfs],     // extent-relative
+             numEntries: <number of records>,
+             bsonBytes: <total size of the bson objects>,
+             recBytes: <total size of the valid records>,
+             onDiskBytes: <length of the extent or range>,
+       (opt) characteristicCount: <number of records containing the field used to tell them apart>
+       (opt) characteristicAvg: <average value of the characteristic field>
+             outOfOrderRecs: <number of records that follow - in the record linked list -
+                              a record that is located further in the extent>
+       (opt) freeRecsPerBucket: [ ... ],
+
+   The nth element in the ``freeRecsPerBucket`` array is the count of deleted records in the
+   nth bucket of the deletedList.
+   ``characteristicCount`` and ``characteristicAvg`` are only present if some documents contain
+   the field specified as ``characteristicField`` and it has a viable type (any number, ObjectID
+   or Date).
+   
+   The list of chunks follows, with similar information aggregated per-chunk:
+
+   .. code-block:: javascript
+
+         chunks: [
+             { numEntries: <number of records>,
+               ...
+               freeRecsPerBucket: [ ... ]
+             },
+             ...
+         ]
+   
+   If ``showRecords: true`` was set two additional fields are added to the outer document:
+
+   .. code-block:: javascript
+
+             records: [
+                 { ofs: <record offset from start of extent>,
+                   recBytes: <record size>,
+                   bsonBytes: <bson document size>,
+        (optional) characteristic: <value of the characteristic field>
+                 }, 
+                 ... (one element per record)
+             ],
+        (optional) deletedRecords: [
+                 { ofs: <offset from start of extent>,
+                   recBytes: <deleted record size>
+                 },
+                 ... (one element per deleted record)
+             ]
+   
 
    .. warning:: This command is resource intensive and may have an
-      impact on the performance of your MongoDB instance.
+      impact on the performance of your MongoDB instance. It also requires
+      the entire collection or extent to be loaded in RAM and it may
+      end up evicting some of the pages from other collections or extents.
 
    .. read-lock
