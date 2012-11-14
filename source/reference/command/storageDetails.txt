@@ -102,10 +102,16 @@ storageDetails
                  },
                  ... (one element per deleted record)
              ]
-   
+
    The typical output, when ``analyze: 'pagesInRAM'``, has the form:
 
-
+           { pageBytes: <system page size>,
+             onDiskBytes: <size of the extent>,
+             inMem: <ratio of pages in memory for the entire extent>,
+       (opt) chunks: [ ... ] (only present if either params.granularity or numberOfChunks is not
+                              zero and there exist more than one chunk for this extent)
+       (opt) chunkBytes: <size of each chunk>
+           }
 
    The :program:`mongo` shell also provides wrappers:
 
